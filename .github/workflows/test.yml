@@ -32,9 +32,9 @@ jobs:
       run: go mod tidy
 
     # Runs a single command using the runners shell
-    - name: Build
+    - name: Build program
       run: go build ${{ github.action_path }}
 
     # Runs command using the runners shell
-    - name: Run a multi-line script
+    - name: Run executable
       run: ${{ github.action_path }}./aquasily -version
