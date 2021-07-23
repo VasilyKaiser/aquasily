@@ -27,14 +27,14 @@ jobs:
       with:
         go-version: ${{ matrix.go-version }}
     - name: Checkout code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v1
     - name: Download dependencies
       run: go mod tidy
 
     # Runs a single command using the runners shell
     - name: Build
-      run: go build .
+      run: go build ${{ github.action_path }}/./
 
     # Runs command using the runners shell
     - name: Run a multi-line script
-      run: aquasily -version
+      run: ${{ github.action_path }}/aquasily -version
