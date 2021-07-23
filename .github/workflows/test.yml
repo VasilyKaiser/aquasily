@@ -37,4 +37,4 @@ jobs:
 
     # Runs command using the runners shell
     - name: Run a multi-line script
-      run: ${{ github.action_path }}/aquasily -version
+      run: ${{ github.action_path }}./aquasily -version
