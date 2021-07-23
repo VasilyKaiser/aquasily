@@ -33,7 +33,7 @@ jobs:
 
     # Runs a single command using the runners shell
     - name: Build
-      run: go build ${{ github.action_path }}/./
+      run: go build ${{ github.action_path }}/
 
     # Runs command using the runners shell
     - name: Run a multi-line script
