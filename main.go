@@ -48,8 +48,7 @@ func hasSupportedScheme(s string) bool {
 
 func main() {
 	if sess, err = core.NewSession(); err != nil {
-		sess.Out.Error("Couldn't start a new session: %s", err.Error())
-		os.Exit(1)
+		sess.Out.Fatal("Couldn't start a new session: %s", err.Error())
 	}
 
 	if *sess.Options.Version {
@@ -73,13 +72,11 @@ func main() {
 		jsonSession, err := ioutil.ReadFile(*sess.Options.SessionPath)
 		if err != nil {
 			sess.Out.Fatal("Unable to read session file at %s: %s\n", *sess.Options.SessionPath, err)
-			os.Exit(1)
 		}
 
 		var parsedSession core.Session
 		if err := json.Unmarshal(jsonSession, &parsedSession); err != nil {
 			sess.Out.Fatal("Unable to parse session file at %s: %s\n", *sess.Options.SessionPath, err)
-			os.Exit(1)
 		}
 
 		sess.Out.Important("Loaded Aquasily session at %s\n", *sess.Options.SessionPath)
@@ -94,7 +91,6 @@ func main() {
 
 		if err != nil {
 			sess.Out.Fatal("Can't read report template file\n")
-			os.Exit(1)
 		}
 
 		report := core.NewReport(&parsedSession, string(template))
