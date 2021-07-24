@@ -57,11 +57,9 @@ func main() {
 	}
 
 	fi, err := os.Stat(*sess.Options.OutDir)
-
 	if os.IsNotExist(err) {
 		sess.Out.Fatal("Output destination %s does not exist\n", *sess.Options.OutDir)
 	}
-
 	if !fi.IsDir() {
 		sess.Out.Fatal("Output destination must be a directory\n")
 	}
@@ -73,7 +71,6 @@ func main() {
 		if err != nil {
 			sess.Out.Fatal("Unable to read session file at %s: %s\n", *sess.Options.SessionPath, err)
 		}
-
 		var parsedSession core.Session
 		if err := json.Unmarshal(jsonSession, &parsedSession); err != nil {
 			sess.Out.Fatal("Unable to parse session file at %s: %s\n", *sess.Options.SessionPath, err)
@@ -92,13 +89,11 @@ func main() {
 		if err != nil {
 			sess.Out.Fatal("Can't read report template file\n")
 		}
-
 		report := core.NewReport(&parsedSession, string(template))
 		f, err := os.OpenFile(sess.GetFilePath(reportHTML), os.O_RDWR|os.O_CREATE, 0644)
 		if err != nil {
 			sess.Out.Fatal("Error during report generation: %s\n", err)
 		}
-
 		err = report.Render(f)
 		if err != nil {
 			sess.Out.Fatal("Error during report generation: %s\n", err)
@@ -160,12 +155,12 @@ func main() {
 		}
 	}
 
-	time.Sleep(1 * time.Second)
+	time.Sleep(2 * time.Second)
 	sess.EventBus.WaitAsync()
 	sess.WaitGroup.Wait()
 
 	sess.EventBus.Publish(core.SessionEnd)
-	time.Sleep(2 * time.Second)
+	time.Sleep(1 * time.Second)
 	sess.EventBus.WaitAsync()
 	sess.WaitGroup.Wait()
 

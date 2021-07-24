@@ -25,14 +25,12 @@ func (p *NmapParser) Parse(r io.Reader) ([]string, error) {
 	if err != nil {
 		return targets, err
 	}
-
 	for _, host := range scan.Hosts {
 		urls := p.hostToURLs(host)
 		for _, url := range urls {
 			targets = append(targets, url)
 		}
 	}
-
 	return targets, nil
 }
 
@@ -51,7 +49,6 @@ func (p *NmapParser) hostToURLs(host nmap.Host) []string {
 		if port.State.State != "open" {
 			continue
 		}
-
 		var protocol string
 		if port.Service.Name == "ssl" {
 			protocol = "https"
@@ -64,7 +61,6 @@ func (p *NmapParser) hostToURLs(host nmap.Host) []string {
 				continue
 			}
 		}
-
 		if len(host.Hostnames) > 0 {
 			for _, hostname := range host.Hostnames {
 				urls = append(urls, core.HostAndPortToURL(hostname.Name, port.PortId, protocol))
@@ -78,6 +74,5 @@ func (p *NmapParser) hostToURLs(host nmap.Host) []string {
 			}
 		}
 	}
-
 	return urls
 }

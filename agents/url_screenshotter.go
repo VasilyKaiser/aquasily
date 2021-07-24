@@ -31,7 +31,6 @@ func (a *URLScreenshotter) Register(s *core.Session) error {
 	s.EventBus.SubscribeAsync(core.SessionEnd, a.OnSessionEnd, false)
 	a.session = s
 	a.createTempUserDir()
-	// a.locateChrome()
 
 	return nil
 }
@@ -43,7 +42,6 @@ func (a *URLScreenshotter) OnURLResponsive(url string) {
 		a.session.Out.Error("Unable to find page for URL: %s\n", url)
 		return
 	}
-
 	a.session.WaitGroup.Add()
 	go func(page *core.Page) {
 		defer a.session.WaitGroup.Done()
@@ -95,8 +93,6 @@ func (a *URLScreenshotter) screenshotPage(aquaPage *core.Page) {
 	defer cancel()
 
 	var buf []byte
-
-	// capture entire browser viewport, returning png with quality=90
 	if err := chromedp.Run(ctx, takeScreenshot(aquaPage.URL, &buf, *a.session.Options.ScreenshotTimeout)); err != nil {
 		a.session.Out.Debug("[%s] Error: %v\n", a.ID(), err)
 		a.session.Stats.IncrementScreenshotFailed()
@@ -109,7 +105,6 @@ func (a *URLScreenshotter) screenshotPage(aquaPage *core.Page) {
 		a.session.Out.Error("%s: screenshot failed: %s\n", aquaPage.URL, err)
 		return
 	}
-
 	a.session.Stats.IncrementScreenshotSuccessful()
 	a.session.Out.Info("%s: %s\n", aquaPage.URL, Green("screenshot successful"))
 	aquaPage.ScreenshotPath = filePath

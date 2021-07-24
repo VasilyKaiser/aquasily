@@ -42,11 +42,9 @@ func (a *URLPublisher) isTLS(port int, host string) bool {
 	if port == 80 {
 		return false
 	}
-
 	if port == 443 {
 		return true
 	}
-
 	dialer := &net.Dialer{Timeout: time.Duration(*a.session.Options.HTTPTimeout) * time.Millisecond}
 	conf := &tls.Config{
 		InsecureSkipVerify: true,

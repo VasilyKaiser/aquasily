@@ -43,7 +43,6 @@ func (a *URLPageTitleExtractor) OnURLResponsive(url string) {
 			a.session.Out.Debug("[%s] Error reading HTML body file for %s: %s\n", a.ID(), page.URL, err)
 			return
 		}
-
 		doc, err := html.Parse(bytes.NewReader(body))
 		if err != nil {
 			a.session.Out.Debug("[%s] Error when parsing HTML body file for %s: %s\n", a.ID(), page.URL, err)

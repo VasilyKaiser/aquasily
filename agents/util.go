@@ -86,7 +86,6 @@ func RandomIPv4Address() string {
 		number := rand.Intn(255)
 		blocks = append(blocks, strconv.Itoa(number))
 	}
-
 	return strings.Join(blocks, ".")
 }
 
@@ -107,7 +106,6 @@ func BaseFilenameFromURL(s string) string {
 	if err != nil {
 		return ""
 	}
-
 	h := sha1.New()
 	io.WriteString(h, u.Path)
 	io.WriteString(h, u.Fragment)

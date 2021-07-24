@@ -44,8 +44,6 @@ func ParseOptions() (Options, error) {
 		SessionPath:       flag.String("session", "", "Load Aquasily session file and generate HTML report"),
 		TemplatePath:      flag.String("template", "", "Path to HTML template to use for report"),
 	}
-
 	flag.Parse()
-
 	return options, nil
 }

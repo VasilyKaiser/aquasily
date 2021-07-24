@@ -36,7 +36,6 @@ func (a *URLTechnologyFingerprinter) OnURLResponsive(url string) {
 		a.session.Out.Error("[%s] Unable to find page for URL: %s\n", a.ID(), url)
 		return
 	}
-
 	a.session.WaitGroup.Add()
 	go func(page *core.Page) {
 		defer a.session.WaitGroup.Done()
@@ -48,7 +47,6 @@ func (a *URLTechnologyFingerprinter) OnURLResponsive(url string) {
 			}
 			seen[key] = struct{}{}
 			page.AddTag(key, "info", page.URL)
-
 		}
 	}(page)
 }
@@ -66,14 +64,11 @@ func (a *URLTechnologyFingerprinter) fingerprint(page *core.Page) {
 		a.session.Out.Error("[%s]: %s\n", a.ID(), err.Error())
 		return
 	}
-
 	wappalyzerClient, err := wappalyzer.New()
 	if err != nil {
 		a.session.Out.Error("[%s]: %s\n", a.ID(), err.Error())
 		return
 	}
-
 	a.technologies = wappalyzerClient.Fingerprint(resp.Header, data)
-
 	a.session.Out.Debug("[%s] Identified technology %s on %s\n", a.ID(), a.technologies, page.URL)
 }

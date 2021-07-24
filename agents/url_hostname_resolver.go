@@ -33,7 +33,6 @@ func (a *URLHostnameResolver) OnURLResponsive(url string) {
 		a.session.Out.Error("Unable to find page for URL: %s\n", url)
 		return
 	}
-
 	if page.IsIPHost() {
 		a.session.Out.Debug("[%s] Skipping hostname resolving on IP host: %s\n", a.ID(), url)
 		page.Addrs = []string{page.ParsedURL().Hostname()}
@@ -49,7 +48,6 @@ func (a *URLHostnameResolver) OnURLResponsive(url string) {
 			a.session.Out.Error("Failed to resolve hostname for %s\n", page.URL)
 			return
 		}
-
 		page.Addrs = addrs
 	}(page)
 }

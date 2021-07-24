@@ -53,7 +53,6 @@ func (a *URLRequester) OnURL(url string) {
 			a.session.Out.Debug("%s: failed\n", url)
 			return
 		}
-
 		a.session.Stats.IncrementRequestSuccessful()
 		if resp.StatusCode >= 500 {
 			a.session.Stats.IncrementResponseCode5xx()
@@ -76,12 +75,10 @@ func (a *URLRequester) OnURL(url string) {
 			a.session.Out.Error("Failed to create page for URL: %s\n", url)
 			return
 		}
-
 		a.writeHeaders(page)
 		if *a.session.Options.SaveBody {
 			a.writeBody(page, resp)
 		}
-
 		a.session.EventBus.Publish(core.URLResponsive, url)
 	}(url)
 }
@@ -96,7 +93,6 @@ func (a *URLRequester) createPageFromResponse(url string, resp gorequest.Respons
 	for name, value := range resp.Header {
 		page.AddHeader(name, strings.Join(value, " "))
 	}
-
 	return page, nil
 }
 

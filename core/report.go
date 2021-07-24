@@ -16,17 +16,14 @@ func (r *Report) Render(dest io.Writer) error {
 			return template.JS(json)
 		},
 	}
-
 	tmpl, err := template.New("Aquasily Report").Funcs(funcMap).Parse(r.Template)
 	if err != nil {
 		return err
 	}
-
 	err = tmpl.Execute(dest, r.Session)
 	if err != nil {
 		return err
 	}
-
 	return nil
 }
 

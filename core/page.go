@@ -173,7 +173,6 @@ func NewPage(pageURL string) (*Page, error) {
 	if err != nil {
 		return nil, err
 	}
-
 	return &Page{
 		UUID:     uuid.New().String(),
 		URL:      pageURL,
