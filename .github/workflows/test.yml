@@ -28,6 +28,7 @@ jobs:
         go-version: ${{ matrix.go-version }}
     - name: Install Chrome
       uses: browser-actions/setup-chrome@latest
+    - name: Check Chrome version 
       run: chrome --version
     - name: Checkout code
       uses: actions/checkout@v1
