@@ -119,7 +119,7 @@ func main() {
 	var targets []string
 	stat, _ := os.Stdin.Stat()
 	if (stat.Mode() & os.ModeCharDevice) == 0 {
-		sess.Out.Info("data is being piped to stdin")
+		sess.Out.Debug("Data is piped to stdin\n")
 		// Reading piped input
 		reader := bufio.NewReader(os.Stdin)
 		if *sess.Options.Nmap {
@@ -136,7 +136,7 @@ func main() {
 			}
 		}
 	} else {
-		sess.Out.Fatal("stdin is from a terminal\n")
+		sess.Out.Fatal("Feed me with hosts/urls using pipe!\n")
 	}
 
 	if len(targets) == 0 {
@@ -165,7 +165,7 @@ func main() {
 	sess.WaitGroup.Wait()
 
 	sess.EventBus.Publish(core.SessionEnd)
-	time.Sleep(1 * time.Second)
+	time.Sleep(2 * time.Second)
 	sess.EventBus.WaitAsync()
 	sess.WaitGroup.Wait()
 

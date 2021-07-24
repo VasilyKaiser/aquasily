@@ -98,7 +98,7 @@ func Gorequest(o core.Options) *gorequest.SuperAgent {
 	return gorequest.New().
 		Proxy(*o.Proxy).
 		Timeout(time.Duration(*o.HTTPTimeout) * time.Millisecond).
-		SetDebug(*o.Debug).
+		// SetDebug(*o.Debug).
 		TLSClientConfig(&tls.Config{InsecureSkipVerify: true})
 }
 

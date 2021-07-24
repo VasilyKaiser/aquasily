@@ -33,6 +33,7 @@ func (a *URLRequester) OnURL(url string) {
 	a.session.WaitGroup.Add()
 	go func(url string) {
 		defer a.session.WaitGroup.Done()
+		// In util.go SetDebug(*o.Debug). is commented
 		http := Gorequest(a.session.Options)
 		resp, _, errs := http.Get(url).
 			Set("User-Agent", RandomUserAgent()).
