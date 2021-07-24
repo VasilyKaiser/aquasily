@@ -26,12 +26,13 @@ jobs:
       uses: actions/setup-go@v2
       with:
         go-version: ${{ matrix.go-version }}
+        
     - name: Install Chrome
       uses: browser-actions/setup-chrome@latest
-    - name: Check Chrome version 
-      run: chrome --version
+
     - name: Checkout code
       uses: actions/checkout@v1
+
     - name: Download dependencies
       run: go mod tidy
 
