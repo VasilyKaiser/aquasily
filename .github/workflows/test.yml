@@ -48,4 +48,4 @@ jobs:
       run: echo "scanme.nmap.org" | ./aquasily -debug
     
     - name: List content inside aquasilyReport dir
-      run: ls -r aquasilyReport*
+      run: ls -R aquasilyReport*
