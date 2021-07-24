@@ -8,7 +8,7 @@ on:
   push:
     branches: [ main, dev ]
   pull_request:
-    branches: [ main ]
+    branches: [ main, dev ]
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
@@ -26,15 +26,21 @@ jobs:
       uses: actions/setup-go@v2
       with:
         go-version: ${{ matrix.go-version }}
+    - name: Install Chrome
+      uses: browser-actions/setup-chrome@latest
+      run: chrome --version
     - name: Checkout code
       uses: actions/checkout@v1
     - name: Download dependencies
       run: go mod tidy
 
     # Runs a single command using the runners shell
-    - name: Build program
+    - name: Build
       run: go build ${{ github.action_path }}
 
     # Runs command using the runners shell
-    - name: Run executable
-      run: ${{ github.action_path }}./aquasily -version
+    - name: Show version
+      run: ./aquasily -version
+    
+    - name: Run scan
+      run: echo "scanme.nmap.org" | ./aquasily -debug
