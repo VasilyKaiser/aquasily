@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"math/rand"
+	"net/http"
 	"net/url"
 	"strconv"
 	"strings"
@@ -14,7 +15,6 @@ import (
 	"github.com/VasilyKaiser/aquasily/core"
 
 	"github.com/fatih/color"
-	"github.com/parnurzeal/gorequest"
 )
 
 // UserAgents for randomization
@@ -97,13 +97,23 @@ func URLEscape(s string) string {
 	return url.QueryEscape(s)
 }
 
-// Gorequest returns a new gorequest's SuperAgent object
-func Gorequest(o core.Options) *gorequest.SuperAgent {
-	return gorequest.New().
-		Proxy(*o.Proxy).
-		Timeout(time.Duration(*o.HTTPTimeout) * time.Millisecond).
-		// SetDebug(*o.Debug).
-		TLSClientConfig(&tls.Config{InsecureSkipVerify: true})
+// MakeClient returns a new client struct
+func MakeClient(o core.Options) *http.Client {
+	if *o.Proxy != "" {
+		proxyURL, err := url.Parse(*o.Proxy)
+		if err != nil {
+			return &http.Client{Timeout: time.Duration(*o.HTTPTimeout) * time.Millisecond}
+		}
+		return &http.Client{
+			Timeout: time.Duration(*o.HTTPTimeout) * time.Millisecond,
+			Transport: &http.Transport{
+				Proxy:           http.ProxyURL(proxyURL),
+				TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+			},
+		}
+
+	}
+	return &http.Client{Timeout: time.Duration(*o.HTTPTimeout) * time.Millisecond}
 }
 
 // BaseFilenameFromURL returns a filename made up from URL
@@ -120,11 +130,6 @@ func BaseFilenameFromURL(s string) string {
 	host := strings.Replace(u.Host, ":", "__", 1)
 	filename := fmt.Sprintf("%s__%s__%s", u.Scheme, strings.Replace(host, ".", "_", -1), pathHash)
 	return strings.ToLower(filename)
-}
-
-// HostAndPortToURL returns a URL from host and port
-func HostAndPortToURL(host string, port int, protocol string) string {
-	return core.HostAndPortToURL(host, port, protocol)
 }
 
 // Green returns colorized string green

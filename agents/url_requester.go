@@ -2,12 +2,12 @@ package agents
 
 import (
 	"fmt"
-	"io/ioutil"
+	"io"
+	"net/http"
 	"os"
 	"strings"
 
 	"github.com/VasilyKaiser/aquasily/core"
-	"github.com/parnurzeal/gorequest"
 )
 
 // URLRequester structure
@@ -38,26 +38,26 @@ func (a *URLRequester) OnURL(url string) {
 	a.session.WaitGroup.Add()
 	go func(url string) {
 		defer a.session.WaitGroup.Done()
-		// In util.go SetDebug(*o.Debug). is commented
-		http := Gorequest(a.session.Options)
-		resp, _, errs := http.Get(url).
-			Set("User-Agent", RandomUserAgent()).
-			Set("X-Forwarded-For", RandomIPv4Address()).
-			Set("Via", fmt.Sprintf("1.1 %s", RandomIPv4Address())).
-			Set("Forwarded", fmt.Sprintf("for=%s;proto=http;by=%s", RandomIPv4Address(), RandomIPv4Address())).End()
 		var status string
-		if errs != nil {
+		client := MakeClient(a.session.Options)
+		req, err := http.NewRequest("GET", url, nil)
+		if err != nil {
+			a.session.Out.Error("[%s] error constructing a new request for: %s\n", a.ID(), url)
+			return
+		}
+		req.Header.Add("User-Agent", RandomUserAgent())
+		req.Header.Add("X-Forwarded-For", RandomIPv4Address())
+		req.Header.Add("Via", fmt.Sprintf("1.1 %s", RandomIPv4Address()))
+		req.Header.Add("Forwarded", fmt.Sprintf("for=%s;proto=http;by=%s", RandomIPv4Address(), RandomIPv4Address()))
+		resp, err := client.Do(req)
+		if err != nil {
 			a.session.Stats.IncrementRequestFailed()
-			for _, err := range errs {
-				a.session.Out.Debug("[%s] Error: %v\n", a.ID(), err)
-				if os.IsTimeout(err) {
-					a.session.Out.Error("%s: request timeout\n", url)
-					return
-				}
-			}
+			a.session.Out.Debug("[%s] Error: %v\n", a.ID(), err)
 			a.session.Out.Debug("%s: failed\n", url)
 			return
 		}
+		defer resp.Body.Close()
+
 		a.session.Stats.IncrementRequestSuccessful()
 		if resp.StatusCode >= 500 {
 			a.session.Stats.IncrementResponseCode5xx()
@@ -88,7 +88,7 @@ func (a *URLRequester) OnURL(url string) {
 	}(url)
 }
 
-func (a *URLRequester) createPageFromResponse(url string, resp gorequest.Response) (*core.Page, error) {
+func (a *URLRequester) createPageFromResponse(url string, resp *http.Response) (*core.Page, error) {
 	page, err := a.session.AddPage(url)
 	if err != nil {
 		return nil, err
@@ -107,23 +107,23 @@ func (a *URLRequester) writeHeaders(page *core.Page) {
 	for _, header := range page.Headers {
 		headers += fmt.Sprintf("%v: %v\n", header.Name, header.Value)
 	}
-	if err := ioutil.WriteFile(a.session.GetFilePath(filepath), []byte(headers), 0644); err != nil {
+	if err := os.WriteFile(a.session.GetFilePath(filepath), []byte(headers), 0644); err != nil {
 		a.session.Out.Debug("[%s] Error: %v\n", a.ID(), err)
 		a.session.Out.Error("Failed to write HTTP response headers for %s to %s\n", page.URL, a.session.GetFilePath(filepath))
 	}
 	page.HeadersPath = filepath
 }
 
-func (a *URLRequester) writeBody(page *core.Page, resp gorequest.Response) {
+func (a *URLRequester) writeBody(page *core.Page, resp *http.Response) {
 	filepath := fmt.Sprintf("html/%s.html", page.BaseFilename())
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		a.session.Out.Debug("[%s] Error: %v\n", a.ID(), err)
 		a.session.Out.Error("Failed to read response body for %s\n", page.URL)
 		return
 	}
 
-	if err := ioutil.WriteFile(a.session.GetFilePath(filepath), body, 0644); err != nil {
+	if err := os.WriteFile(a.session.GetFilePath(filepath), body, 0644); err != nil {
 		a.session.Out.Debug("[%s] Error: %v\n", a.ID(), err)
 		a.session.Out.Error("Failed to write HTTP response body for %s to %s\n", page.URL, a.session.GetFilePath(filepath))
 	}
