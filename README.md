@@ -105,7 +105,8 @@ export AQUASILY_OUT_PATH="~/aquasilyOutput"
 	- A folder with files containing raw response headers from processed targets
 - **html/:**
 	- A folder with files containing the raw response bodies from processed targets. If you are processing a large amount of hosts, and don't need this for further analysis, you can disable this with the `-save-body=false` flag to save some disk space.
-	**Note:** If body is not saved, aquasily will make additional HTTP requests for fingerprinting, and in the report there will be no title.
+	
+	**Note:** If body is not saved, aquasily will make additional HTTP requests for fingerprinting.
 - **screenshots/:**
 	- A folder with PNG screenshots of the processed targets
 

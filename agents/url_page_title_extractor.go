@@ -39,7 +39,6 @@ func (a *URLPageTitleExtractor) OnURLResponsive(url string) {
 		a.session.Out.Error("[%s] Unable to find page for URL: %s\n", a.ID(), url)
 		return
 	}
-
 	a.session.WaitGroup.Add()
 	go func(page *core.Page) {
 		defer a.session.WaitGroup.Done()
@@ -76,4 +75,13 @@ func pageTitle(n *html.Node) string {
 		}
 	}
 	return title
+}
+
+// ExtractTitle for use only if flag -save-body=false provided
+func ExtractTitle(body []byte) string {
+	doc, err := html.Parse(bytes.NewReader(body))
+	if err != nil {
+		return ""
+	}
+	return pageTitle(doc)
 }

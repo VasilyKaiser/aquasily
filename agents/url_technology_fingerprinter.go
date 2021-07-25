@@ -3,9 +3,7 @@ package agents
 import (
 	"crypto/tls"
 	"io"
-	"io/fs"
 	"net/http"
-	"os"
 	"strings"
 
 	"github.com/VasilyKaiser/aquasily/core"
@@ -64,12 +62,12 @@ func (a *URLTechnologyFingerprinter) fingerprint(page *core.Page) {
 	var headers http.Header
 	var err error
 	if page.BodyPath != "" {
-		body, err = fs.ReadFile(os.DirFS(*a.session.Options.OutDir), page.BodyPath)
+		body, err = a.session.ReadFile(page.BodyPath)
 		if err != nil {
 			a.session.Out.Error("[%s]: %s\n", a.ID(), err.Error())
 			return
 		}
-		headers = getHeaders(*a.session.Options.OutDir, page.HeadersPath)
+		headers = a.getHeaders(page.HeadersPath)
 		if headers == nil {
 			a.session.Out.Warn("[%s]: Couldn't get headers from the file: %s\n", a.ID(), page.HeadersPath)
 			return
@@ -89,6 +87,7 @@ func (a *URLTechnologyFingerprinter) fingerprint(page *core.Page) {
 		}
 		defer resp.Body.Close()
 		headers = resp.Header
+		page.PageTitle = ExtractTitle(body)
 	}
 
 	wappalyzerClient, err := wappalyzer.New()
@@ -100,9 +99,9 @@ func (a *URLTechnologyFingerprinter) fingerprint(page *core.Page) {
 	a.session.Out.Debug("[%s] Identified technology %s on %s\n", a.ID(), a.technologies, page.URL)
 }
 
-func getHeaders(dirLocation, headersPath string) (headers http.Header) {
+func (a *URLTechnologyFingerprinter) getHeaders(headersPath string) (headers http.Header) {
 	headers = make(map[string][]string)
-	data, err := fs.ReadFile(os.DirFS(dirLocation), headersPath)
+	data, err := a.session.ReadFile(headersPath)
 	if err != nil {
 		return
 	}
