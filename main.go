@@ -95,7 +95,7 @@ func parseStdin() {
 }
 
 func calculatePagesStructure() {
-	sess.Out.Important("Calculating page structures...")
+	sess.Out.Important("\nCalculating page structures...")
 	f, _ := os.OpenFile(sess.GetFilePath(urlsTXT), os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	for _, page := range sess.Pages {
 		filename := sess.GetFilePath(fmt.Sprintf("html/%s.html", page.BaseFilename()))
@@ -159,10 +159,10 @@ func reportFromSessionFile() {
 	} else {
 		template, err = core.Asset("static/report_template.html")
 	}
-
 	if err != nil {
-		sess.Out.Fatal("Can't read report template file\n")
+		sess.Out.Fatal("Can't read report template file: %s\n", err.Error())
 	}
+
 	report := core.NewReport(&parsedSession, string(template))
 	f, err := os.OpenFile(sess.GetFilePath(reportHTML), os.O_RDWR|os.O_CREATE, 0644)
 	if err != nil {
