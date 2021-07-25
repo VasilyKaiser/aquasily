@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"net/url"
 	"os"
 	"strings"
@@ -51,7 +50,7 @@ func generateReport() {
 	sess.Out.Important("Generating HTML report...")
 	var template []byte
 	if *sess.Options.TemplatePath != "" {
-		template, err = ioutil.ReadFile(*sess.Options.TemplatePath)
+		template, err = os.ReadFile(*sess.Options.TemplatePath)
 	} else {
 		template, err = core.Asset("static/report_template.html")
 	}
@@ -142,7 +141,7 @@ func clusterSimilarPages() {
 }
 
 func reportFromSessionFile() {
-	jsonSession, err := ioutil.ReadFile(*sess.Options.SessionPath)
+	jsonSession, err := os.ReadFile(*sess.Options.SessionPath)
 	if err != nil {
 		sess.Out.Fatal("Unable to read session file at %s: %s\n", *sess.Options.SessionPath, err)
 	}
@@ -156,7 +155,7 @@ func reportFromSessionFile() {
 	var template []byte
 	// If template not specified, use one embedded in bindata.go
 	if *sess.Options.TemplatePath != "" {
-		template, err = ioutil.ReadFile(*sess.Options.TemplatePath)
+		template, err = os.ReadFile(*sess.Options.TemplatePath)
 	} else {
 		template, err = core.Asset("static/report_template.html")
 	}
@@ -179,28 +178,24 @@ func reportFromSessionFile() {
 
 func main() {
 	if sess, err = core.NewSession(); err != nil {
-		sess.Out.Fatal("Couldn't start a new session: %s", err.Error())
+		fmt.Printf("Couldn't start a new session: %s\n", err.Error())
+		os.Exit(1)
 	}
 
 	if *sess.Options.Version {
-		sess.Out.Info("%s v%s", core.Name, core.Version)
+		sess.Out.Warn("%s", core.Name)
 		os.Exit(0)
 	}
 
-	fi, err := os.Stat(*sess.Options.OutDir)
-	if os.IsNotExist(err) {
-		sess.Out.Fatal("Output destination %s does not exist\n", *sess.Options.OutDir)
-	}
-	if !fi.IsDir() {
-		sess.Out.Fatal("Output destination must be a directory\n")
-	}
-
-	sess.Out.Important("%s v%s started at %s\n\n", core.Name, core.Version, sess.Stats.StartedAt.Format(time.RFC3339))
+	sess.Out.Important("%s\nStarted at %s\n\n", core.Name, sess.Stats.StartedAt.Format(time.ANSIC))
 
 	if *sess.Options.SessionPath != "" {
 		reportFromSessionFile()
 		os.Exit(0)
 	}
+
+	parseStdin()
+	sess.InitDirectories()
 
 	agents.NewTCPPortScanner().Register(sess)
 	agents.NewURLPublisher().Register(sess)
@@ -210,16 +205,16 @@ func main() {
 	agents.NewURLScreenshotter().Register(sess)
 	agents.NewURLTechnologyFingerprinter().Register(sess)
 
-	parseStdin()
-
 	if len(targets) == 0 {
 		sess.Out.Fatal("No targets found in input.\n")
 	}
 
+	sess.Out.Important("===================================\n")
 	sess.Out.Important("Targets    : %d\n", len(targets))
 	sess.Out.Important("Threads    : %d\n", *sess.Options.Threads)
 	sess.Out.Important("Ports      : %s\n", strings.Trim(strings.Replace(fmt.Sprint(sess.Ports), " ", ", ", -1), "[]"))
-	sess.Out.Important("Output dir : %s\n\n", *sess.Options.OutDir)
+	sess.Out.Important("Output dir : %s\n", *sess.Options.OutDir)
+	sess.Out.Important("===================================\n\n")
 
 	sess.EventBus.Publish(core.SessionStart)
 
@@ -250,30 +245,34 @@ func main() {
 
 	sess.End()
 
-	sess.Out.Important("Writing session file...")
+	sess.Out.Important("Writing session file...\n")
 	err = sess.SaveToFile(sessionJSON)
 	if err != nil {
 		sess.Out.Error("Failed!\n")
 		sess.Out.Debug("Error: %v\n", err)
 	}
 
+	sess.Out.Important("==============================\n")
 	sess.Out.Important("Time:\n")
 	sess.Out.Info(" - Started at  : %v\n", sess.Stats.StartedAt.Format(time.RFC3339))
 	sess.Out.Info(" - Finished at : %v\n", sess.Stats.FinishedAt.Format(time.RFC3339))
-	sess.Out.Info(" - Duration    : %v\n\n", sess.Stats.Duration().Round(time.Second))
+	sess.Out.Info(" - Duration    : %v\n", sess.Stats.Duration().Round(time.Second))
 
+	sess.Out.Important("==============================\n")
 	sess.Out.Important("Requests:\n")
 	sess.Out.Info(" - Successful : %v\n", sess.Stats.RequestSuccessful)
-	sess.Out.Info(" - Failed     : %v\n\n", sess.Stats.RequestFailed)
+	sess.Out.Info(" - Failed     : %v\n", sess.Stats.RequestFailed)
 
 	sess.Out.Info(" - 2xx : %v\n", sess.Stats.ResponseCode2xx)
 	sess.Out.Info(" - 3xx : %v\n", sess.Stats.ResponseCode3xx)
 	sess.Out.Info(" - 4xx : %v\n", sess.Stats.ResponseCode4xx)
-	sess.Out.Info(" - 5xx : %v\n\n", sess.Stats.ResponseCode5xx)
+	sess.Out.Info(" - 5xx : %v\n", sess.Stats.ResponseCode5xx)
+	sess.Out.Important("==============================\n")
 
 	sess.Out.Important("Screenshots:\n")
 	sess.Out.Info(" - Successful : %v\n", sess.Stats.ScreenshotSuccessful)
-	sess.Out.Info(" - Failed     : %v\n\n", sess.Stats.ScreenshotFailed)
+	sess.Out.Info(" - Failed     : %v\n", sess.Stats.ScreenshotFailed)
+	sess.Out.Important("==============================\n")
 
 	sess.Out.Important("Wrote HTML report to: %s\n\n", sess.GetFilePath(reportHTML))
 }

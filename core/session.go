@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/url"
 	"os"
 	"path"
@@ -125,7 +124,6 @@ func (s *Session) Start() {
 	s.initThreads()
 	s.initEventBus()
 	s.initWaitGroup()
-	s.initDirectories()
 }
 
 // End reports time finished
@@ -224,7 +222,8 @@ func (s *Session) initWaitGroup() {
 	s.WaitGroup = New(*s.Options.Threads)
 }
 
-func (s *Session) initDirectories() {
+// InitDirectories makes needed directories inside OutPath
+func (s *Session) InitDirectories() {
 	*s.Options.OutDir = path.Join(*s.Options.OutDir, getFolderName())
 	if !checkIfPathExists(*s.Options.OutDir) {
 		for i := 1; i < 10000; i++ {
@@ -281,7 +280,7 @@ func (s *Session) GetFilePath(p string) string {
 
 // ReadFile returns content of the file
 func (s *Session) ReadFile(p string) ([]byte, error) {
-	content, err := ioutil.ReadFile(s.GetFilePath(p))
+	content, err := os.ReadFile(s.GetFilePath(p))
 	if err != nil {
 		return content, err
 	}
@@ -297,7 +296,7 @@ func (s *Session) ToJSON() string {
 // SaveToFile saves Session to the file
 func (s *Session) SaveToFile(filename string) error {
 	path := s.GetFilePath(filename)
-	err := ioutil.WriteFile(path, []byte(s.ToJSON()), 0644)
+	err := os.WriteFile(path, []byte(s.ToJSON()), 0644)
 	if err != nil {
 		return err
 	}
@@ -316,21 +315,29 @@ func NewSession() (*Session, error) {
 		return nil, err
 	}
 
+	dest, err := os.Stat(*session.Options.OutDir)
+	if os.IsNotExist(err) {
+		return nil, fmt.Errorf("output destination %s does not exist", *session.Options.OutDir)
+	}
+	if !dest.IsDir() {
+		return nil, fmt.Errorf("output destination must be a directory: %s", *session.Options.OutDir)
+	}
+
 	if *session.Options.BrowserPath != "" {
 		if _, err := os.Stat(*session.Options.BrowserPath); os.IsNotExist(err) {
-			return nil, fmt.Errorf("Chrome path %s does not exist", *session.Options.BrowserPath)
+			return nil, fmt.Errorf("chrome path %s does not exist", *session.Options.BrowserPath)
 		}
 	}
 
 	if *session.Options.SessionPath != "" {
 		if _, err := os.Stat(*session.Options.SessionPath); os.IsNotExist(err) {
-			return nil, fmt.Errorf("Session path %s does not exist", *session.Options.SessionPath)
+			return nil, fmt.Errorf("session path %s does not exist", *session.Options.SessionPath)
 		}
 	}
 
 	if *session.Options.TemplatePath != "" {
 		if _, err := os.Stat(*session.Options.TemplatePath); os.IsNotExist(err) {
-			return nil, fmt.Errorf("Template path %s does not exist", *session.Options.TemplatePath)
+			return nil, fmt.Errorf("template path %s does not exist", *session.Options.TemplatePath)
 		}
 	}
 

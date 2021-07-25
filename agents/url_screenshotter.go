@@ -3,7 +3,6 @@ package agents
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"strconv"
 	"strings"
@@ -62,7 +61,7 @@ func (a *URLScreenshotter) OnSessionEnd() {
 }
 
 func (a *URLScreenshotter) createTempUserDir() {
-	dir, err := ioutil.TempDir("", "aquatone-browser")
+	dir, err := os.MkdirTemp("", "aquatone-browser")
 	if err != nil {
 		a.session.Out.Fatal("[%s] Unable to create temporary user directory for Chrome/Chromium browser: %s\n", a.ID(), err.Error())
 	}
@@ -70,8 +69,8 @@ func (a *URLScreenshotter) createTempUserDir() {
 	a.tempUserDirPath = dir
 }
 
-func (a *URLScreenshotter) screenshotPage(aquaPage *core.Page) {
-	filePath := fmt.Sprintf("screenshots/%s.png", aquaPage.BaseFilename())
+func (a *URLScreenshotter) screenshotPage(page *core.Page) {
+	filePath := fmt.Sprintf("screenshots/%s.png", page.BaseFilename())
 	resolution := strings.Split(*a.session.Options.Resolution, ",")
 
 	width, _ := strconv.Atoi(resolution[0])
@@ -99,22 +98,22 @@ func (a *URLScreenshotter) screenshotPage(aquaPage *core.Page) {
 	defer cancel()
 
 	var buf []byte
-	if err := chromedp.Run(ctx, takeScreenshot(aquaPage.URL, &buf, *a.session.Options.ScreenshotTimeout)); err != nil {
+	if err := chromedp.Run(ctx, takeScreenshot(page.URL, &buf, *a.session.Options.ScreenshotTimeout)); err != nil {
 		a.session.Out.Debug("[%s] Error: %v\n", a.ID(), err)
 		a.session.Stats.IncrementScreenshotFailed()
-		a.session.Out.Error("%s: screenshot failed: %s\n", aquaPage.URL, err)
+		a.session.Out.Error("%s: screenshot failed: %s\n", page.URL, err)
 		return
 	}
-	if err := ioutil.WriteFile(a.session.GetFilePath(filePath), buf, 0o644); err != nil {
+	if err := os.WriteFile(a.session.GetFilePath(filePath), buf, 0o644); err != nil {
 		a.session.Out.Debug("[%s] Error: %v\n", a.ID(), err)
 		a.session.Stats.IncrementScreenshotFailed()
-		a.session.Out.Error("%s: screenshot failed: %s\n", aquaPage.URL, err)
+		a.session.Out.Error("%s: screenshot failed: %s\n", page.URL, err)
 		return
 	}
 	a.session.Stats.IncrementScreenshotSuccessful()
-	a.session.Out.Info("%s: %s\n", aquaPage.URL, Green("screenshot successful"))
-	aquaPage.ScreenshotPath = filePath
-	aquaPage.HasScreenshot = true
+	a.session.Out.Info("%s: %s\n", page.URL, Green("screenshot successful"))
+	page.ScreenshotPath = filePath
+	page.HasScreenshot = true
 }
 
 func takeScreenshot(urlstr string, res *[]byte, timeout int) chromedp.Tasks {
