@@ -305,11 +305,6 @@ func (s *Session) SaveToFile(filename string) error {
 	return nil
 }
 
-// GetAsset calls Asset to load and return the asset for the given name
-func (s *Session) GetAsset(name string) ([]byte, error) {
-	return Asset(name)
-}
-
 // NewSession sets options and returns a new session
 func NewSession() (*Session, error) {
 	var err error

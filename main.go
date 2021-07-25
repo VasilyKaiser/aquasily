@@ -53,7 +53,7 @@ func generateReport() {
 	if *sess.Options.TemplatePath != "" {
 		template, err = ioutil.ReadFile(*sess.Options.TemplatePath)
 	} else {
-		template, err = sess.GetAsset("static/report_template.html")
+		template, err = core.Asset("static/report_template.html")
 	}
 
 	if err != nil {
@@ -158,7 +158,7 @@ func reportFromSessionFile() {
 	if *sess.Options.TemplatePath != "" {
 		template, err = ioutil.ReadFile(*sess.Options.TemplatePath)
 	} else {
-		template, err = sess.GetAsset("static/report_template.html")
+		template, err = core.Asset("static/report_template.html")
 	}
 
 	if err != nil {
