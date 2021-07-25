@@ -41,7 +41,7 @@ Pipe host names to aquasily or URLs if you don't want common web port scanning.
 | -screenshot-timeout |  | `6000` | `cat hosts.txt \| aquasily -screenshot-timeout 2000` |
 | -silent | Suppress all output except for errors | `false` | `cat hosts.txt \| aquasily -silent` |
 | -debug | Print debugging information | `false` | `cat hosts.txt \| aquasily -debug` |
-| -save-body | Save response bodies to files | `true` | `cat hosts.txt \| aquasily -save-body` |
+| -save-body | Save response bodies to files | `true` | `cat hosts.txt \| aquasily -save-body=false` |
 | -session | Load Aquasily session file and generate HTML report | `""` | `aquasily -session /var/tmp/aquasily_session.json` |
 | -template | Path to HTML template to use for report | `""` | `cat hosts.txt \| aquasily -template /var/tmp/report_template.html` |
 
@@ -105,6 +105,8 @@ export AQUASILY_OUT_PATH="~/aquasilyOutput"
 	- A folder with files containing raw response headers from processed targets
 - **html/:**
 	- A folder with files containing the raw response bodies from processed targets. If you are processing a large amount of hosts, and don't need this for further analysis, you can disable this with the `-save-body=false` flag to save some disk space.
+	
+	**Note:** If body is not saved, aquasily will make additional HTTP requests for fingerprinting.
 - **screenshots/:**
 	- A folder with PNG screenshots of the processed targets
 

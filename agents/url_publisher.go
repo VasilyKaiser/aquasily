@@ -36,9 +36,9 @@ func (a *URLPublisher) OnTCPPort(port int, host string) {
 	a.session.Out.Debug("[%s] Received new open port on %s: %d\n", a.ID(), host, port)
 	var url string
 	if a.isTLS(port, host) {
-		url = HostAndPortToURL(host, port, "https")
+		url = core.HostAndPortToURL(host, port, "https")
 	} else {
-		url = HostAndPortToURL(host, port, "http")
+		url = core.HostAndPortToURL(host, port, "http")
 	}
 	a.session.EventBus.Publish(core.URL, url)
 }

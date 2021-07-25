@@ -2,7 +2,6 @@ package parsers
 
 import (
 	"io"
-	"io/ioutil"
 
 	"github.com/VasilyKaiser/aquasily/core"
 
@@ -20,7 +19,7 @@ func NewNmapParser() *NmapParser {
 // Parse returns parsed targets from input
 func (p *NmapParser) Parse(r io.Reader) ([]string, error) {
 	var targets []string
-	bytes, err := ioutil.ReadAll(r)
+	bytes, err := io.ReadAll(r)
 	if err != nil {
 		return targets, err
 	}

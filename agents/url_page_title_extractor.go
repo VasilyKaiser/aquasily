@@ -36,10 +36,9 @@ func (a *URLPageTitleExtractor) OnURLResponsive(url string) {
 	a.session.Out.Debug("[%s] Received new responsive URL %s\n", a.ID(), url)
 	page := a.session.GetPage(url)
 	if page == nil {
-		a.session.Out.Error("Unable to find page for URL: %s\n", url)
+		a.session.Out.Error("[%s] Unable to find page for URL: %s\n", a.ID(), url)
 		return
 	}
-
 	a.session.WaitGroup.Add()
 	go func(page *core.Page) {
 		defer a.session.WaitGroup.Done()
@@ -53,7 +52,7 @@ func (a *URLPageTitleExtractor) OnURLResponsive(url string) {
 			a.session.Out.Debug("[%s] Error when parsing HTML body file for %s: %s\n", a.ID(), page.URL, err)
 			return
 		}
-		a.session.Out.Debug("Extracting title from: %v ", page.Hostname)
+		a.session.Out.Debug("[%s] Extracting title from: %v\n", a.ID(), page.Hostname)
 		page.PageTitle = pageTitle(doc)
 	}(page)
 }
@@ -76,4 +75,13 @@ func pageTitle(n *html.Node) string {
 		}
 	}
 	return title
+}
+
+// ExtractTitle for use only if flag -save-body=false provided
+func ExtractTitle(body []byte) string {
+	doc, err := html.Parse(bytes.NewReader(body))
+	if err != nil {
+		return ""
+	}
+	return pageTitle(doc)
 }

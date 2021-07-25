@@ -2,8 +2,9 @@ package agents
 
 import (
 	"crypto/tls"
-	"io/ioutil"
+	"io"
 	"net/http"
+	"strings"
 
 	"github.com/VasilyKaiser/aquasily/core"
 	wappalyzer "github.com/projectdiscovery/wappalyzergo"
@@ -57,23 +58,66 @@ func (a *URLTechnologyFingerprinter) OnURLResponsive(url string) {
 }
 
 func (a *URLTechnologyFingerprinter) fingerprint(page *core.Page) {
-	// Ignore Certificate Errors
-	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
-	resp, err := http.DefaultClient.Get(page.URL)
-	if err != nil {
-		a.session.Out.Error("[%s]: %s\n", a.ID(), err.Error())
-		return
+	var body []byte
+	var headers http.Header
+	var err error
+	if page.BodyPath != "" {
+		body, err = a.session.ReadFile(page.BodyPath)
+		if err != nil {
+			a.session.Out.Error("[%s]: %s\n", a.ID(), err.Error())
+			return
+		}
+		headers = a.getHeaders(page.HeadersPath)
+		if headers == nil {
+			a.session.Out.Warn("[%s]: Couldn't get headers from the file: %s\n", a.ID(), page.HeadersPath)
+			return
+		}
+	} else {
+		// Ignore Certificate Errors
+		http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
+		resp, err := http.DefaultClient.Get(page.URL)
+		if err != nil {
+			a.session.Out.Error("[%s]: %s\n", a.ID(), err.Error())
+			return
+		}
+		body, err = io.ReadAll(resp.Body)
+		if err != nil {
+			a.session.Out.Error("[%s]: %s\n", a.ID(), err.Error())
+			return
+		}
+		defer resp.Body.Close()
+		headers = resp.Header
+		page.PageTitle = ExtractTitle(body)
 	}
-	data, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		a.session.Out.Error("[%s]: %s\n", a.ID(), err.Error())
-		return
-	}
+
 	wappalyzerClient, err := wappalyzer.New()
 	if err != nil {
 		a.session.Out.Error("[%s]: %s\n", a.ID(), err.Error())
 		return
 	}
-	a.technologies = wappalyzerClient.Fingerprint(resp.Header, data)
+	a.technologies = wappalyzerClient.Fingerprint(headers, body)
 	a.session.Out.Debug("[%s] Identified technology %s on %s\n", a.ID(), a.technologies, page.URL)
+}
+
+func (a *URLTechnologyFingerprinter) getHeaders(headersPath string) (headers http.Header) {
+	headers = make(map[string][]string)
+	data, err := a.session.ReadFile(headersPath)
+	if err != nil {
+		return
+	}
+	var fileContent []string
+	if strings.Contains(string(data), "\r\n") {
+		fileContent = strings.Split(string(data), "\r\n")
+	} else {
+		fileContent = strings.Split(string(data), "\n")
+	}
+	for i, line := range fileContent {
+		if i > 0 && strings.Trim(line, " ") != "" {
+			header := strings.Split(line, ": ")
+			for j := 0; j < len(header)-1; j++ {
+				headers.Add(header[0], header[j+1])
+			}
+		}
+	}
+	return
 }
