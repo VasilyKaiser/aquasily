@@ -61,7 +61,7 @@ func (s *Stats) IncrementPortClosed() {
 	atomic.AddUint32(&s.PortClosed, 1)
 }
 
-// IncrementRequestSuccessful increments number of successfull requests
+// IncrementRequestSuccessful increments number of successful requests
 func (s *Stats) IncrementRequestSuccessful() {
 	atomic.AddUint32(&s.RequestSuccessful, 1)
 }
@@ -305,7 +305,8 @@ func (s *Session) SaveToFile(filename string) error {
 	return nil
 }
 
-func (s *Session) Asset(name string) ([]byte, error) {
+// GetAsset calls Asset to load and return the asset for the given name
+func (s *Session) GetAsset(name string) ([]byte, error) {
 	return Asset(name)
 }
 
