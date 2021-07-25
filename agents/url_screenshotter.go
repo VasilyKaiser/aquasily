@@ -13,19 +13,23 @@ import (
 	"github.com/chromedp/chromedp"
 )
 
+// URLScreenshotter structure
 type URLScreenshotter struct {
 	session         *core.Session
 	tempUserDirPath string
 }
 
+// NewURLScreenshotter returns URLScreenshotter structure
 func NewURLScreenshotter() *URLScreenshotter {
 	return &URLScreenshotter{}
 }
 
+// ID returns name of the source file
 func (a *URLScreenshotter) ID() string {
 	return "agent:url_screenshotter"
 }
 
+// Register is registering for EventBus URLResponsive and SessionEnd events
 func (a *URLScreenshotter) Register(s *core.Session) error {
 	s.EventBus.SubscribeAsync(core.URLResponsive, a.OnURLResponsive, false)
 	s.EventBus.SubscribeAsync(core.SessionEnd, a.OnSessionEnd, false)
@@ -35,6 +39,7 @@ func (a *URLScreenshotter) Register(s *core.Session) error {
 	return nil
 }
 
+// OnURLResponsive takes screenshot of the page
 func (a *URLScreenshotter) OnURLResponsive(url string) {
 	a.session.Out.Debug("[%s] Received new responsive URL %s\n", a.ID(), url)
 	page := a.session.GetPage(url)
@@ -49,6 +54,7 @@ func (a *URLScreenshotter) OnURLResponsive(url string) {
 	}(page)
 }
 
+// OnSessionEnd removes temp directory
 func (a *URLScreenshotter) OnSessionEnd() {
 	a.session.Out.Debug("[%s] Received SessionEnd event\n", a.ID())
 	os.RemoveAll(a.tempUserDirPath)

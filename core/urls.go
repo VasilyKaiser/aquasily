@@ -9,6 +9,7 @@ var (
 		7000, 8172, 8243, 8333, 8443, 8834, 9443, 12443, 18091, 18092}
 )
 
+// HostAndPortToURL returns a URL from host and port
 func HostAndPortToURL(host string, port int, protocol string) string {
 	var url string
 	if protocol != "" {

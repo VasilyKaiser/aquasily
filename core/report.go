@@ -5,11 +5,13 @@ import (
 	"io"
 )
 
+// Report structure
 type Report struct {
 	Session  *Session
 	Template string
 }
 
+// Render the report template
 func (r *Report) Render(dest io.Writer) error {
 	funcMap := template.FuncMap{
 		"json": func(json string) template.JS {
@@ -27,6 +29,7 @@ func (r *Report) Render(dest io.Writer) error {
 	return nil
 }
 
+// NewReport returns a new report
 func NewReport(s *Session, templ string) *Report {
 	return &Report{
 		Session:  s,

@@ -7,18 +7,22 @@ import (
 	"github.com/VasilyKaiser/aquasily/core"
 )
 
+// URLHostnameResolver structure
 type URLHostnameResolver struct {
 	session *core.Session
 }
 
+// NewURLHostnameResolver returns URLHostnameResolver structure
 func NewURLHostnameResolver() *URLHostnameResolver {
 	return &URLHostnameResolver{}
 }
 
+// ID returns name of the source file
 func (a *URLHostnameResolver) ID() string {
 	return "agent:url_hostname_resolver"
 }
 
+// Register is registering for EventBus URLResponsive events
 func (a *URLHostnameResolver) Register(s *core.Session) error {
 	s.EventBus.SubscribeAsync(core.URLResponsive, a.OnURLResponsive, false)
 	a.session = s
@@ -26,6 +30,7 @@ func (a *URLHostnameResolver) Register(s *core.Session) error {
 	return nil
 }
 
+// OnURLResponsive is resolving the host/IP provided
 func (a *URLHostnameResolver) OnURLResponsive(url string) {
 	a.session.Out.Debug("[%s] Received new responsive URL %s\n", a.ID(), url)
 	page := a.session.GetPage(url)

@@ -1,5 +1,6 @@
 package core
 
+// Predefined port lists
 var (
 	SmallPortList = []int{80, 443}
 

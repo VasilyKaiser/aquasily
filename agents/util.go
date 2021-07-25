@@ -17,6 +17,7 @@ import (
 	"github.com/parnurzeal/gorequest"
 )
 
+// UserAgents for randomization
 var (
 	UserAgents = []string{
 		"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.103 Safari/537.36",
@@ -75,10 +76,12 @@ var (
 	red    = color.New(color.FgRed).SprintFunc()
 )
 
+// RandomUserAgent returns random User-Agent
 func RandomUserAgent() string {
 	return UserAgents[rand.Intn(len(UserAgents))]
 }
 
+// RandomIPv4Address returns random IPv4
 func RandomIPv4Address() string {
 	rand.Seed(time.Now().UnixNano())
 	blocks := []string{}
@@ -89,10 +92,12 @@ func RandomIPv4Address() string {
 	return strings.Join(blocks, ".")
 }
 
+// URLEscape escapes the string so it can be safely placed inside a URL query
 func URLEscape(s string) string {
 	return url.QueryEscape(s)
 }
 
+// Gorequest returns a new gorequest's SuperAgent object
 func Gorequest(o core.Options) *gorequest.SuperAgent {
 	return gorequest.New().
 		Proxy(*o.Proxy).
@@ -101,6 +106,7 @@ func Gorequest(o core.Options) *gorequest.SuperAgent {
 		TLSClientConfig(&tls.Config{InsecureSkipVerify: true})
 }
 
+// BaseFilenameFromURL returns a filename made up from URL
 func BaseFilenameFromURL(s string) string {
 	u, err := url.Parse(s)
 	if err != nil {
@@ -116,18 +122,22 @@ func BaseFilenameFromURL(s string) string {
 	return strings.ToLower(filename)
 }
 
+// HostAndPortToURL returns a URL from host and port
 func HostAndPortToURL(host string, port int, protocol string) string {
 	return core.HostAndPortToURL(host, port, protocol)
 }
 
+// Green returns colorized string green
 func Green(s string) string {
 	return green(s)
 }
 
+// Yellow returns colorized string yellow
 func Yellow(s string) string {
 	return yellow(s)
 }
 
+// Red returns colorized string red
 func Red(s string) string {
 	return red(s)
 }

@@ -20,6 +20,7 @@ import (
 	"github.com/asaskevich/EventBus"
 )
 
+// Variables for Session handling
 const (
 	SessionStart  = "session:start"
 	SessionEnd    = "session:end"
@@ -29,6 +30,7 @@ const (
 	TCPPort       = "port:tcp"
 )
 
+// Stats structure
 type Stats struct {
 	StartedAt            time.Time `json:"startedAt"`
 	FinishedAt           time.Time `json:"finishedAt"`
@@ -44,50 +46,62 @@ type Stats struct {
 	ScreenshotFailed     uint32    `json:"screenshotFailed"`
 }
 
+// Duration returns duration
 func (s *Stats) Duration() time.Duration {
 	return s.FinishedAt.Sub(s.StartedAt)
 }
 
+// IncrementPortOpen increments number of ports open
 func (s *Stats) IncrementPortOpen() {
 	atomic.AddUint32(&s.PortOpen, 1)
 }
 
+// IncrementPortClosed increments number of ports closed
 func (s *Stats) IncrementPortClosed() {
 	atomic.AddUint32(&s.PortClosed, 1)
 }
 
+// IncrementRequestSuccessful increments number of successfull requests
 func (s *Stats) IncrementRequestSuccessful() {
 	atomic.AddUint32(&s.RequestSuccessful, 1)
 }
 
+// IncrementRequestFailed increments number of requests failed
 func (s *Stats) IncrementRequestFailed() {
 	atomic.AddUint32(&s.RequestFailed, 1)
 }
 
+// IncrementResponseCode2xx ...
 func (s *Stats) IncrementResponseCode2xx() {
 	atomic.AddUint32(&s.ResponseCode2xx, 1)
 }
 
+// IncrementResponseCode3xx ...
 func (s *Stats) IncrementResponseCode3xx() {
 	atomic.AddUint32(&s.ResponseCode3xx, 1)
 }
 
+// IncrementResponseCode4xx ...
 func (s *Stats) IncrementResponseCode4xx() {
 	atomic.AddUint32(&s.ResponseCode4xx, 1)
 }
 
+// IncrementResponseCode5xx ...
 func (s *Stats) IncrementResponseCode5xx() {
 	atomic.AddUint32(&s.ResponseCode5xx, 1)
 }
 
+// IncrementScreenshotSuccessful ...
 func (s *Stats) IncrementScreenshotSuccessful() {
 	atomic.AddUint32(&s.ScreenshotSuccessful, 1)
 }
 
+// IncrementScreenshotFailed ...
 func (s *Stats) IncrementScreenshotFailed() {
 	atomic.AddUint32(&s.ScreenshotFailed, 1)
 }
 
+// Session structure
 type Session struct {
 	sync.Mutex
 	Version                string              `json:"version"`
@@ -101,6 +115,7 @@ type Session struct {
 	WaitGroup              SizedWaitGroup      `json:"-"`
 }
 
+// Start initiating all required tasks
 func (s *Session) Start() {
 	s.Pages = make(map[string]*Page)
 	s.PageSimilarityClusters = make(map[string][]string)
@@ -113,10 +128,12 @@ func (s *Session) Start() {
 	s.initDirectories()
 }
 
+// End reports time finished
 func (s *Session) End() {
 	s.Stats.FinishedAt = time.Now()
 }
 
+// AddPage returns page and nil or nil and err if error occure
 func (s *Session) AddPage(url string) (*Page, error) {
 	s.Lock()
 	defer s.Unlock()
@@ -133,6 +150,7 @@ func (s *Session) AddPage(url string) (*Page, error) {
 	return page, nil
 }
 
+// GetPage returns page from Session Pages map if exists or nil
 func (s *Session) GetPage(url string) *Page {
 	if page, ok := s.Pages[url]; ok {
 		return page
@@ -140,6 +158,7 @@ func (s *Session) GetPage(url string) *Page {
 	return nil
 }
 
+// GetPageByUUID returns page matching by UUID or nil
 func (s *Session) GetPageByUUID(id string) *Page {
 	for _, page := range s.Pages {
 		if page.UUID == id {
@@ -238,6 +257,7 @@ func getFolderName() string {
 	return "aquasilyReport_" + t.Format(layout)
 }
 
+// BaseFilenameFromURL returns filename made up from URL
 func (s *Session) BaseFilenameFromURL(stru string) string {
 	u, err := url.Parse(stru)
 	if err != nil {
@@ -254,10 +274,12 @@ func (s *Session) BaseFilenameFromURL(stru string) string {
 	return strings.ToLower(filename)
 }
 
+// GetFilePath returns path joined with OutDir
 func (s *Session) GetFilePath(p string) string {
 	return path.Join(*s.Options.OutDir, p)
 }
 
+// ReadFile returns content of the file
 func (s *Session) ReadFile(p string) ([]byte, error) {
 	content, err := ioutil.ReadFile(s.GetFilePath(p))
 	if err != nil {
@@ -266,11 +288,13 @@ func (s *Session) ReadFile(p string) ([]byte, error) {
 	return content, nil
 }
 
+// ToJSON returns session in JSON format
 func (s *Session) ToJSON() string {
 	sessionJSON, _ := json.Marshal(s)
 	return string(sessionJSON)
 }
 
+// SaveToFile saves Session to the file
 func (s *Session) SaveToFile(filename string) error {
 	path := s.GetFilePath(filename)
 	err := ioutil.WriteFile(path, []byte(s.ToJSON()), 0644)
@@ -285,6 +309,7 @@ func (s *Session) Asset(name string) ([]byte, error) {
 	return Asset(name)
 }
 
+// NewSession sets options and returns a new session
 func NewSession() (*Session, error) {
 	var err error
 	var session Session

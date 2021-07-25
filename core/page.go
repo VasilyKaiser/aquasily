@@ -12,6 +12,7 @@ import (
 	"github.com/google/uuid"
 )
 
+// Header description
 type Header struct {
 	Name              string `json:"name"`
 	Value             string `json:"value"`
@@ -19,6 +20,7 @@ type Header struct {
 	IncreasesSecurity bool   `json:"increasesSecurity"`
 }
 
+// SetSecurityFlags according to response headers
 func (h *Header) SetSecurityFlags() {
 	if h.decreasesSecurity() {
 		h.DecreasesSecurity = true
@@ -76,6 +78,7 @@ func (h Header) increasesSecurity() bool {
 	return false
 }
 
+// Tag structure
 type Tag struct {
 	Text string `json:"text"`
 	Type string `json:"type"`
@@ -83,15 +86,18 @@ type Tag struct {
 	Hash string `json:"hash"`
 }
 
+// HasLink for tag
 func (t Tag) HasLink() bool {
 	return t.Link != ""
 }
 
+// Note structure
 type Note struct {
 	Text string `json:"text"`
 	Type string `json:"type"`
 }
 
+// Page structure
 type Page struct {
 	sync.Mutex
 	UUID           string   `json:"uuid"`
@@ -110,6 +116,7 @@ type Page struct {
 	Notes          []Note   `json:"notes"`
 }
 
+// AddHeader to Headers list
 func (p *Page) AddHeader(name string, value string) {
 	p.Lock()
 	defer p.Unlock()
@@ -121,6 +128,7 @@ func (p *Page) AddHeader(name string, value string) {
 	p.Headers = append(p.Headers, header)
 }
 
+// AddTag to Tags list
 func (p *Page) AddTag(text string, tagType string, link string) {
 	p.Lock()
 	defer p.Unlock()
@@ -138,6 +146,7 @@ func (p *Page) AddTag(text string, tagType string, link string) {
 	})
 }
 
+// AddNote to Notes list
 func (p *Page) AddNote(text string, noteType string) {
 	p.Lock()
 	defer p.Unlock()
@@ -147,6 +156,7 @@ func (p *Page) AddNote(text string, noteType string) {
 	})
 }
 
+// BaseFilename for the page
 func (p *Page) BaseFilename() string {
 	u := p.ParsedURL()
 	h := sha1.New()
@@ -159,15 +169,18 @@ func (p *Page) BaseFilename() string {
 	return strings.ToLower(filename)
 }
 
+// ParsedURL for the page
 func (p *Page) ParsedURL() *url.URL {
 	parsedURL, _ := url.Parse(p.URL)
 	return parsedURL
 }
 
+// IsIPHost for provided value
 func (p *Page) IsIPHost() bool {
 	return net.ParseIP(p.ParsedURL().Hostname()) != nil
 }
 
+// NewPage returns a new page if URL resolved
 func NewPage(pageURL string) (*Page, error) {
 	u, err := url.Parse(pageURL)
 	if err != nil {

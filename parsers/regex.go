@@ -7,12 +7,15 @@ import (
 	"github.com/mvdan/xurls"
 )
 
+// RegexParser structure
 type RegexParser struct{}
 
+// NewRegexParser returns RegexParser structure
 func NewRegexParser() *RegexParser {
 	return &RegexParser{}
 }
 
+// Parse returns parsed targets from input
 func (p *RegexParser) Parse(r io.Reader) ([]string, error) {
 	var targets []string
 	targetsFilter := make(map[string]struct{})

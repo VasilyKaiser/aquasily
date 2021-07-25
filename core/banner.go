@@ -1,5 +1,6 @@
 package core
 
+// Basic info
 const (
 	Name    = "aquasily"
 	Version = "0.1.0"

@@ -8,18 +8,22 @@ import (
 	"golang.org/x/net/html"
 )
 
+// URLPageTitleExtractor structure
 type URLPageTitleExtractor struct {
 	session *core.Session
 }
 
+// NewURLPageTitleExtractor returns URLPageTitleExtractor structure
 func NewURLPageTitleExtractor() *URLPageTitleExtractor {
 	return &URLPageTitleExtractor{}
 }
 
+// ID returns name of the source file
 func (a *URLPageTitleExtractor) ID() string {
 	return "agent:url_page_title_extractor"
 }
 
+// Register is registering for EventBus URLResponsive events
 func (a *URLPageTitleExtractor) Register(s *core.Session) error {
 	s.EventBus.SubscribeAsync(core.URLResponsive, a.OnURLResponsive, false)
 	a.session = s
@@ -27,6 +31,7 @@ func (a *URLPageTitleExtractor) Register(s *core.Session) error {
 	return nil
 }
 
+// OnURLResponsive extracts the page title
 func (a *URLPageTitleExtractor) OnURLResponsive(url string) {
 	a.session.Out.Debug("[%s] Received new responsive URL %s\n", a.ID(), url)
 	page := a.session.GetPage(url)
@@ -61,9 +66,8 @@ func pageTitle(n *html.Node) string {
 		// Check if title contains something
 		if n.FirstChild != nil {
 			return n.FirstChild.Data
-		} else {
-			return ""
 		}
+		return ""
 	}
 	for c := n.FirstChild; c != nil; c = c.NextSibling {
 		title = pageTitle(c)

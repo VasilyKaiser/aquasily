@@ -6,6 +6,7 @@ import (
 	"strings"
 )
 
+// Options for arguments
 type Options struct {
 	Threads           *int
 	OutDir            *string
@@ -25,6 +26,7 @@ type Options struct {
 	Version           *bool
 }
 
+// ParseOptions from arguments
 func ParseOptions() (Options, error) {
 	options := Options{
 		Version:           flag.Bool("version", false, "Print current Aquasily version"),
