@@ -87,7 +87,13 @@ cat targets.txt | aquasily
 * * *
 ## Output
 
-When Aquasily is done processing the target hosts, it has created a bunch of files and folders inside `aquasilyReport_<date>` directory:
+When Aquasily is done processing the target hosts, it has created a bunch of files and folders inside `aquasilyReport_<date>` in current directory:
+
+P.S. It is also possible to set a permanent default output destination by defining an environment variable `AQUASILY_OUT_PATH`, example:
+```bash
+export AQUASILY_OUT_PATH="~/aquasilyOutput"
+```
+
 
 - **aquasily_report.html:** 
 	- An HTML report to open in a browser that displays all the collected screenshots and response headers clustered by similarity.

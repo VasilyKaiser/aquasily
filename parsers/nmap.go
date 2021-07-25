@@ -9,12 +9,15 @@ import (
 	"github.com/lair-framework/go-nmap"
 )
 
+// NmapParser structure
 type NmapParser struct{}
 
+// NewNmapParser returns NmapParser structure
 func NewNmapParser() *NmapParser {
 	return &NmapParser{}
 }
 
+// Parse returns parsed targets from input
 func (p *NmapParser) Parse(r io.Reader) ([]string, error) {
 	var targets []string
 	bytes, err := ioutil.ReadAll(r)
@@ -27,9 +30,8 @@ func (p *NmapParser) Parse(r io.Reader) ([]string, error) {
 	}
 	for _, host := range scan.Hosts {
 		urls := p.hostToURLs(host)
-		for _, url := range urls {
-			targets = append(targets, url)
-		}
+		targets = append(targets, urls...)
+
 	}
 	return targets, nil
 }

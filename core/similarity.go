@@ -8,6 +8,7 @@ import (
 	"golang.org/x/net/html"
 )
 
+// GetPageStructure returns structure from body provided
 func GetPageStructure(body io.Reader) ([]string, error) {
 	var structure []string
 	z := html.NewTokenizer(body)
@@ -30,6 +31,7 @@ func GetPageStructure(body io.Reader) ([]string, error) {
 	}
 }
 
+// GetSimilarity return a measure of the sequences' similarity
 func GetSimilarity(a, b []string) float64 {
 	matcher := difflib.NewMatcher(a, b)
 	return matcher.Ratio()

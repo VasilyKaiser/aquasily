@@ -10,24 +10,29 @@ import (
 	"github.com/parnurzeal/gorequest"
 )
 
+// URLRequester structure
 type URLRequester struct {
 	session *core.Session
 }
 
+// NewURLRequester returns URLRequester structure
 func NewURLRequester() *URLRequester {
 	return &URLRequester{}
 }
 
-func (d *URLRequester) ID() string {
+// ID returns name of the source file
+func (a *URLRequester) ID() string {
 	return "agent:url_requester"
 }
 
+// Register is registering for EventBus URL events
 func (a *URLRequester) Register(s *core.Session) error {
 	s.EventBus.SubscribeAsync(core.URL, a.OnURL, false)
 	a.session = s
 	return nil
 }
 
+// OnURL makes request, saves its body and publishes URLResponsive to the EventBus
 func (a *URLRequester) OnURL(url string) {
 	a.session.Out.Debug("[%s] Received new URL %s\n", a.ID(), url)
 	a.session.WaitGroup.Add()

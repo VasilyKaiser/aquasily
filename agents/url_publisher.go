@@ -9,24 +9,29 @@ import (
 	"github.com/VasilyKaiser/aquasily/core"
 )
 
+// URLPublisher structure
 type URLPublisher struct {
 	session *core.Session
 }
 
+// NewURLPublisher returns URLPublisher structure
 func NewURLPublisher() *URLPublisher {
 	return &URLPublisher{}
 }
 
-func (d *URLPublisher) ID() string {
+// ID returns name of the source file
+func (a *URLPublisher) ID() string {
 	return "agent:url_publisher"
 }
 
+// Register is registering for EventBus TCPPort events
 func (a *URLPublisher) Register(s *core.Session) error {
 	s.EventBus.SubscribeAsync(core.TCPPort, a.OnTCPPort, false)
 	a.session = s
 	return nil
 }
 
+// OnTCPPort constructs URL and publishes it to EventBus
 func (a *URLPublisher) OnTCPPort(port int, host string) {
 	a.session.Out.Debug("[%s] Received new open port on %s: %d\n", a.ID(), host, port)
 	var url string

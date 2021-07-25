@@ -8,24 +8,29 @@ import (
 	"github.com/VasilyKaiser/aquasily/core"
 )
 
+// TCPPortScanner structure
 type TCPPortScanner struct {
 	session *core.Session
 }
 
+// NewTCPPortScanner returns TCPPortScanner structure
 func NewTCPPortScanner() *TCPPortScanner {
 	return &TCPPortScanner{}
 }
 
-func (d *TCPPortScanner) ID() string {
+// ID returns name of the source file
+func (a *TCPPortScanner) ID() string {
 	return "agent:tcp_port_scanner"
 }
 
+// Register is registering for EventBus Host events
 func (a *TCPPortScanner) Register(s *core.Session) error {
 	s.EventBus.SubscribeAsync(core.Host, a.OnHost, false)
 	a.session = s
 	return nil
 }
 
+// OnHost scans the host
 func (a *TCPPortScanner) OnHost(host string) {
 	a.session.Out.Debug("[%s] Received new host: %s\n", a.ID(), host)
 	for _, port := range a.session.Ports {
