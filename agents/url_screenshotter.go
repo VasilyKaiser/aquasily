@@ -6,7 +6,6 @@ import (
 	"os"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/VasilyKaiser/aquasily/core"
 	"github.com/chromedp/chromedp"
@@ -98,7 +97,7 @@ func (a *URLScreenshotter) screenshotPage(page *core.Page) {
 	defer cancel()
 
 	var buf []byte
-	if err := chromedp.Run(ctx, takeScreenshot(page.URL, &buf, *a.session.Options.ScreenshotTimeout)); err != nil {
+	if err := chromedp.Run(ctx, takeScreenshot(page.URL, &buf)); err != nil {
 		a.session.Out.Debug("[%s] Error: %v\n", a.ID(), err)
 		a.session.Stats.IncrementScreenshotFailed()
 		a.session.Out.Error("%s: screenshot failed: %s\n", page.URL, err)
@@ -116,10 +115,9 @@ func (a *URLScreenshotter) screenshotPage(page *core.Page) {
 	page.HasScreenshot = true
 }
 
-func takeScreenshot(urlstr string, res *[]byte, timeout int) chromedp.Tasks {
+func takeScreenshot(urlstr string, res *[]byte) chromedp.Tasks {
 	return chromedp.Tasks{
 		chromedp.Navigate(urlstr),
-		chromedp.Sleep(time.Duration(timeout) * time.Millisecond),
 		chromedp.CaptureScreenshot(res),
 	}
 }

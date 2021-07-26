@@ -38,7 +38,6 @@ Pipe host names to aquasily or URLs if you don't want common web port scanning.
 | -resolution | Screenshot resolution | `1200,900` | `cat hosts.txt \| aquasily -resolution 1400,1400` |
 | -proxy | Proxy to use for HTTP requests | `""` | `cat hosts.txt \| aquasily -proxy http://127.0.0.1:8080` |
 | -http-timeout | Timeout in milliseconds for HTTP requests | `3000` | `cat hosts.txt \| aquasily -http-timeout 2000` |
-| -screenshot-timeout |  | `6000` | `cat hosts.txt \| aquasily -screenshot-timeout 2000` |
 | -silent | Suppress all output except for errors | `false` | `cat hosts.txt \| aquasily -silent` |
 | -debug | Print debugging information | `false` | `cat hosts.txt \| aquasily -debug` |
 | -save-body | Save response bodies to files | `true` | `cat hosts.txt \| aquasily -save-body=false` |
