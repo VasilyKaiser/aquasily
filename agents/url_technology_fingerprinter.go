@@ -52,7 +52,7 @@ func (a *URLTechnologyFingerprinter) OnURLResponsive(url string) {
 				continue
 			}
 			seen[key] = struct{}{}
-			page.AddTag(key, "info", page.URL)
+			page.AddTag(key, "info", a.constructURL(key))
 		}
 	}(page)
 }
@@ -120,4 +120,13 @@ func (a *URLTechnologyFingerprinter) getHeaders(headersPath string) (headers htt
 		}
 	}
 	return
+}
+
+func (a *URLTechnologyFingerprinter) constructURL(technologyName string) string {
+	wappalyzerURL := "https://www.wappalyzer.com/technologies/"
+	techPath, ok := a.session.Technologies[technologyName]
+	if ok {
+		return wappalyzerURL + techPath[0] + "/" + techPath[1]
+	}
+	return wappalyzerURL
 }
