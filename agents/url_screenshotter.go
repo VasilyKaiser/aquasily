@@ -6,6 +6,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/VasilyKaiser/aquasily/core"
 	"github.com/chromedp/chromedp"
@@ -46,6 +47,7 @@ func (a *URLScreenshotter) OnURLResponsive(url string) {
 		return
 	}
 	a.session.WaitGroup.Add()
+	time.Sleep(2 * time.Second)
 	go func(page *core.Page) {
 		defer a.session.WaitGroup.Done()
 		a.screenshotPage(page)
@@ -90,34 +92,89 @@ func (a *URLScreenshotter) screenshotPage(page *core.Page) {
 	// if *a.session.Options.Proxy != "" {
 	// 	opts = append(opts, chromedp.ProxyServer(*a.session.Options.Proxy))
 	// }
-
+	c1 := make(chan string, 1)
 	ctx, cancelExec := chromedp.NewExecAllocator(context.Background(), opts...)
 	defer cancelExec()
 	ctx, cancel := chromedp.NewContext(ctx)
 	defer cancel()
-
+	a.session.Out.Debug("[%v] Attending to capture: %s\n", a.ID(), page.URL)
 	var buf []byte
-	if err := chromedp.Run(ctx, takeScreenshot(page.URL, &buf)); err != nil {
-		a.session.Out.Debug("[%s] Error: %v\n", a.ID(), err)
-		a.session.Stats.IncrementScreenshotFailed()
-		a.session.Out.Error("%s: screenshot failed: %s\n", page.URL, err)
+	var outOfTime = false
+	var dtstart time.Time
+	var dtend time.Time
+	go func() {
+		dtstart = time.Now()
+		capturePart := func() string {
+			if err := chromedp.Run(ctx, takeScreenshot(page.URL, &buf)); err != nil {
+				if err.Error() != "context canceled" && !outOfTime {
+					a.session.Out.Debug("[%s] Error: %v\n", a.ID(), err)
+					a.session.Stats.IncrementScreenshotFailed()
+					a.session.Out.Error("%s: Screenshot failed: %s\n", page.URL, err)
+					cancel()
+				}
+				return "not done"
+			}
+			dtend = time.Now()
+			if err := os.WriteFile(a.session.GetFilePath(filePath), buf, 0o644); err != nil {
+				if !outOfTime {
+					a.session.Out.Debug("[%s] Error: %v\n", a.ID(), err)
+					a.session.Stats.IncrementScreenshotFailed()
+					a.session.Out.Error("%s: Failed to write to file: %s\n", page.URL, err.Error())
+					return "not done"
+				}
+			}
+			return "done"
+		}()
+		c1 <- capturePart
+	}()
+	select {
+	case res := <-c1:
+		if res == "done" && outOfTime {
+			return
+		} else if res == "done" {
+			page.ScreenshotPath = filePath
+			page.HasScreenshot = true
+			a.session.Out.Debug("%s done - screenshot: %v\n", page.URL, page.HasScreenshot)
+			a.session.Stats.IncrementScreenshotSuccessful()
+			a.session.Out.Info("%s: %s %s\n", page.URL, Green("screenshot successful"), dtend.Sub(dtstart).Round(time.Second))
+			cancel()
+			return
+		} else if res == "not done" && outOfTime {
+			return
+		}
+	case <-time.After(15 * time.Second):
+		outOfTime = true
+		if err := chromedp.Run(ctx, capture(&buf)); err != nil {
+			a.session.Out.Error("[%s] Error while capturing the screen: %s\n", a.ID(), err.Error())
+			a.session.Stats.IncrementScreenshotFailed()
+			return
+		}
+		dtend = time.Now()
+		if err := os.WriteFile(a.session.GetFilePath(filePath), buf, 0o644); err != nil {
+			a.session.Out.Error("[%s] Error while writing to file: %\n", a.ID(), err.Error())
+			a.session.Stats.IncrementScreenshotFailed()
+			return
+		}
+		a.session.Stats.IncrementScreenshotSuccessful()
+		a.session.Out.Info("%s: %s %s\n", page.URL, Green("screenshot successful"), dtend.Sub(dtstart).Round(time.Second))
+		cancel()
+		page.ScreenshotPath = filePath
+		page.HasScreenshot = true
+		a.session.Out.Debug("%s after timeout - screenshot: %v\n", page.URL, page.HasScreenshot)
 		return
 	}
-	if err := os.WriteFile(a.session.GetFilePath(filePath), buf, 0o644); err != nil {
-		a.session.Out.Debug("[%s] Error: %v\n", a.ID(), err)
-		a.session.Stats.IncrementScreenshotFailed()
-		a.session.Out.Error("%s: screenshot failed: %s\n", page.URL, err)
-		return
-	}
-	a.session.Stats.IncrementScreenshotSuccessful()
-	a.session.Out.Info("%s: %s\n", page.URL, Green("screenshot successful"))
-	page.ScreenshotPath = filePath
-	page.HasScreenshot = true
+	page.HasScreenshot = false
+	a.session.Out.Debug("%s screenshot: %v\n", page.URL, page.HasScreenshot)
 }
 
 func takeScreenshot(urlstr string, res *[]byte) chromedp.Tasks {
 	return chromedp.Tasks{
 		chromedp.Navigate(urlstr),
+		chromedp.CaptureScreenshot(res),
+	}
+}
+func capture(res *[]byte) chromedp.Tasks {
+	return chromedp.Tasks{
 		chromedp.CaptureScreenshot(res),
 	}
 }
