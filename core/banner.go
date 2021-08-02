@@ -15,7 +15,7 @@ var (
 "Y888888  "Y88888  "Y88888 "Y888888  88888P' 888 888  "Y88888 
               888                                         888 
               888                                    Y8b d88P 
-              888              %s                  "Y88P"
+              888              %s                   "Y88P"
 `, Version)
 	Version = "v1.0.0"
 	Author  = "Vasily Kaiser"
