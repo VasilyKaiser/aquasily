@@ -142,7 +142,7 @@ func (a *URLScreenshotter) screenshotPage(page *core.Page) {
 		} else if res == "not done" && outOfTime {
 			return
 		}
-	case <-time.After(15 * time.Second):
+	case <-time.After(time.Duration(*a.session.Options.ScreenshotTimeout) * time.Second):
 		outOfTime = true
 		if err := chromedp.Run(ctx, capture(&buf)); err != nil {
 			a.session.Out.Error("[%s] Error while capturing the screen: %s\n", a.ID(), err.Error())
