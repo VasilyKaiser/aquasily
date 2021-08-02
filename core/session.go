@@ -16,6 +16,8 @@ import (
 	"sync/atomic"
 	"time"
 
+	"github.com/VasilyKaiser/aquasily/static"
+
 	"github.com/asaskevich/EventBus"
 )
 
@@ -110,17 +112,29 @@ type Session struct {
 	Pages                  map[string]*Page    `json:"pages"`
 	PageSimilarityClusters map[string][]string `json:"pageSimilarityClusters"`
 	Ports                  []int               `json:"-"`
+	Technologies           map[string][]string `json:"-"`
 	EventBus               EventBus.Bus        `json:"-"`
 	WaitGroup              SizedWaitGroup      `json:"-"`
+}
+
+// Technology name and categories
+type Technology []struct {
+	Slug       string `json:"slug"`
+	Name       string `json:"name"`
+	Categories []struct {
+		Slug string `json:"slug"`
+	} `json:"categories"`
 }
 
 // Start initiating all required tasks
 func (s *Session) Start() {
 	s.Pages = make(map[string]*Page)
 	s.PageSimilarityClusters = make(map[string][]string)
+	s.Technologies = make(map[string][]string)
 	s.initStats()
 	s.initLogger()
 	s.initPorts()
+	s.initTechnologies()
 	s.initThreads()
 	s.initEventBus()
 	s.initWaitGroup()
@@ -242,6 +256,19 @@ func (s *Session) InitDirectories() {
 				s.Out.Fatal("Failed to create required directory %s: %s\n", d, err.Error())
 			}
 		}
+	}
+}
+
+// InitTechnologies populates map of technology name and url path
+func (s *Session) initTechnologies() {
+	var technologiesStruct Technology
+	err := json.Unmarshal([]byte(static.TechnologiesData), &technologiesStruct)
+	if err != nil {
+		s.Out.Error("[session.go] Couldn't load JSON data %s\n", err.Error())
+	}
+	for _, tech := range technologiesStruct {
+		s.Technologies[tech.Name] = append(s.Technologies[tech.Name], tech.Categories[0].Slug)
+		s.Technologies[tech.Name] = append(s.Technologies[tech.Name], tech.Slug)
 	}
 }
 
