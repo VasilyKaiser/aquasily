@@ -1,3 +1,4 @@
 .vscode/
 genReport/
 *.txt
+releases/
