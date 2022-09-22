@@ -17,7 +17,7 @@ var (
               888                                    Y8b d88P 
               888              %s                  "Y88P"
 `, Version)
-	Version = "v1.0.0"
+	Version = "v1.0.1"
 	Author  = "Vasily Kaiser"
 	Website = "https://github.com/VasilyKaiser/aquasily"
 )
