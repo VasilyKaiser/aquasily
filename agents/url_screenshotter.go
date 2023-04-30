@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
@@ -68,6 +69,20 @@ func (a *URLScreenshotter) createTempUserDir() {
 	}
 	a.session.Out.Debug("[%s] Created temporary user directory at: %s\n", a.ID(), dir)
 	a.tempUserDirPath = dir
+}
+
+func (a *URLScreenshotter) compareScreenshots(page *core.Page) {
+	if *a.session.Options.ReferenceScreenshots != "" {
+		if val, ok := a.session.ReferenceScreenshots[filepath.Base(page.ScreenshotPath)]; ok {
+			page.Different = true
+			page.LastScreenshot = val
+			absScreenshotPath, _ := filepath.Abs(a.session.GetFilePath(page.ScreenshotPath))
+			page.ScreenshotDifference = a.Compare(val, absScreenshotPath)
+		} else {
+			a.session.Out.Debug("No screenshot to compare!\n")
+			page.Different = false
+		}
+	}
 }
 
 func (a *URLScreenshotter) screenshotPage(page *core.Page) {
@@ -138,6 +153,7 @@ func (a *URLScreenshotter) screenshotPage(page *core.Page) {
 			a.session.Stats.IncrementScreenshotSuccessful()
 			a.session.Out.Info("%s: %s %s\n", page.URL, Green("screenshot successful"), dtend.Sub(dtstart).Round(time.Second))
 			cancel()
+			a.compareScreenshots(page)
 			return
 		} else if res == "not done" && outOfTime {
 			return
@@ -161,6 +177,7 @@ func (a *URLScreenshotter) screenshotPage(page *core.Page) {
 		page.ScreenshotPath = filePath
 		page.HasScreenshot = true
 		a.session.Out.Debug("%s after timeout - screenshot: %v\n", page.URL, page.HasScreenshot)
+		a.compareScreenshots(page)
 		return
 	}
 	page.HasScreenshot = false

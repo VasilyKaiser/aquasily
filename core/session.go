@@ -111,6 +111,7 @@ type Session struct {
 	Stats                  *Stats              `json:"stats"`
 	Pages                  map[string]*Page    `json:"pages"`
 	PageSimilarityClusters map[string][]string `json:"pageSimilarityClusters"`
+	ReferenceScreenshots   map[string]string   `json:"referenceScreenshots"`
 	Ports                  []int               `json:"-"`
 	Technologies           map[string][]string `json:"-"`
 	EventBus               EventBus.Bus        `json:"-"`

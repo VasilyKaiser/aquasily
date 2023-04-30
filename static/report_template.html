@@ -260,6 +260,9 @@
         <p class="card-text">
           <span :class="'badge badge-pill text-break text-wrap ' + badgeClassForStatus()">${ page.status }</span><a v-for="tag in page.tags" :href="tag.link" target="_blank" class="badge badge-pill text-break" :class="'badge-' + tag.type">${ tag.text }</a>
         </p>
+        <p v-if="page.differentFromLastTime">
+            <a :href="page.lastScreenshot" target="_blank">${ page.screenshotDifference }% different</a>
+        </p>
       </div>
       <div class="card-footer">
         <a href="#" class="btn btn-outline-primary btn-sm card-link" v-on:click="openDetailsModal">View Details</a> <a class="btn btn-outline-secondary btn-sm card-link float-right" :href="page.url" rel="noreferrer" target="_blank">Visit Page</a>

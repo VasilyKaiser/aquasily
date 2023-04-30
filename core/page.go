@@ -100,20 +100,23 @@ type Note struct {
 // Page structure
 type Page struct {
 	sync.Mutex
-	UUID           string   `json:"uuid"`
-	URL            string   `json:"url"`
-	Hostname       string   `json:"hostname"`
-	Addrs          []string `json:"addrs"`
-	Status         string   `json:"status"`
-	PageTitle      string   `json:"pageTitle"`
-	PageStructure  []string `json:"-"`
-	HeadersPath    string   `json:"headersPath"`
-	BodyPath       string   `json:"bodyPath"`
-	ScreenshotPath string   `json:"screenshotPath"`
-	HasScreenshot  bool     `json:"hasScreenshot"`
-	Headers        []Header `json:"headers"`
-	Tags           []Tag    `json:"tags"`
-	Notes          []Note   `json:"notes"`
+	UUID                 string   `json:"uuid"`
+	URL                  string   `json:"url"`
+	Hostname             string   `json:"hostname"`
+	Addrs                []string `json:"addrs"`
+	Status               string   `json:"status"`
+	PageTitle            string   `json:"pageTitle"`
+	PageStructure        []string `json:"-"`
+	HeadersPath          string   `json:"headersPath"`
+	BodyPath             string   `json:"bodyPath"`
+	ScreenshotPath       string   `json:"screenshotPath"`
+	HasScreenshot        bool     `json:"hasScreenshot"`
+	Different            bool     `json:"differentFromLastTime"`
+	ScreenshotDifference int      `json:"screenshotDifference"`
+	LastScreenshot       string   `json:"lastScreenshot"`
+	Headers              []Header `json:"headers"`
+	Tags                 []Tag    `json:"tags"`
+	Notes                []Note   `json:"notes"`
 }
 
 // AddHeader to Headers list

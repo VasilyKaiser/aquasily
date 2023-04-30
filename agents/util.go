@@ -5,9 +5,12 @@ import (
 	"crypto/tls"
 	"fmt"
 	"io"
+	"io/fs"
 	"math/rand"
 	"net/http"
 	"net/url"
+	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
@@ -130,6 +133,24 @@ func BaseFilenameFromURL(s string) string {
 	host := strings.Replace(u.Host, ":", "__", 1)
 	filename := fmt.Sprintf("%s__%s__%s", u.Scheme, strings.Replace(host, ".", "_", -1), pathHash)
 	return strings.ToLower(filename)
+}
+
+func GetFilePathsMap(dirPath string) (map[string]string, error) {
+	filepaths := make(map[string]string)
+	dirFS := os.DirFS(dirPath)
+	files, err := fs.ReadDir(dirFS, ".")
+	if err != nil {
+		return nil, err
+	}
+
+	// Loop through all the files in the directory and save their paths to the map
+	for _, file := range files {
+		if !file.IsDir() {
+			filepath := filepath.Join(dirPath, file.Name())
+			filepaths[file.Name()] = filepath
+		}
+	}
+	return filepaths, nil
 }
 
 // Green returns colorized string green

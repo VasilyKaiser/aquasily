@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/url"
 	"os"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -196,6 +197,26 @@ func main() {
 
 	parseStdin()
 	sess.InitDirectories()
+
+	if *sess.Options.ReferenceScreenshots != "" {
+		if !filepath.IsAbs(*sess.Options.ReferenceScreenshots) {
+			*sess.Options.ReferenceScreenshots, err = filepath.Abs(*sess.Options.ReferenceScreenshots)
+			if err != nil {
+				sess.Out.Error("Couldn't get the absolute path of %s\n", sess.Options.ReferenceScreenshots)
+				os.Exit(1)
+			} else {
+				if !strings.Contains(*sess.Options.ReferenceScreenshots, "screenshots") {
+					*sess.Options.ReferenceScreenshots = filepath.Join(*sess.Options.ReferenceScreenshots, "screenshots")
+				}
+			}
+		}
+		sess.Out.Debug("Path to screenshots to compare: %s\n", *sess.Options.ReferenceScreenshots)
+		sess.ReferenceScreenshots, err = agents.GetFilePathsMap(*sess.Options.ReferenceScreenshots)
+		if err != nil {
+			sess.Out.Error("Couldn't get screenshots from provided directory - %v", err)
+			os.Exit(1)
+		}
+	}
 
 	agents.NewTCPPortScanner().Register(sess)
 	agents.NewURLPublisher().Register(sess)
