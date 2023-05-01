@@ -3,6 +3,7 @@ package agents
 import (
 	"context"
 	"fmt"
+	"image/png"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -11,12 +12,12 @@ import (
 
 	"github.com/VasilyKaiser/aquasily/core"
 	"github.com/chromedp/chromedp"
+	"github.com/corona10/goimagehash"
 )
 
 // URLScreenshotter structure
 type URLScreenshotter struct {
-	session         *core.Session
-	tempUserDirPath string
+	session *core.Session
 }
 
 // NewURLScreenshotter returns URLScreenshotter structure
@@ -32,9 +33,7 @@ func (a *URLScreenshotter) ID() string {
 // Register is registering for EventBus URLResponsive and SessionEnd events
 func (a *URLScreenshotter) Register(s *core.Session) error {
 	s.EventBus.SubscribeAsync(core.URLResponsive, a.OnURLResponsive, false)
-	s.EventBus.SubscribeAsync(core.SessionEnd, a.OnSessionEnd, false)
 	a.session = s
-	a.createTempUserDir()
 
 	return nil
 }
@@ -55,20 +54,24 @@ func (a *URLScreenshotter) OnURLResponsive(url string) {
 	}(page)
 }
 
-// OnSessionEnd removes temp directory
-func (a *URLScreenshotter) OnSessionEnd() {
-	a.session.Out.Debug("[%s] Received SessionEnd event\n", a.ID())
-	os.RemoveAll(a.tempUserDirPath)
-	a.session.Out.Debug("[%s] Deleted temporary user directory at: %s\n", a.ID(), a.tempUserDirPath)
-}
-
-func (a *URLScreenshotter) createTempUserDir() {
-	dir, err := os.MkdirTemp("", "aquatone-browser")
+func (a *URLScreenshotter) Compare(image1Path string, image2Path string) int {
+	a.session.Out.Debug("Comparing: Image1: %s | Image2: %s\n", image1Path, image2Path)
+	image1File, err := os.Open(image1Path)
 	if err != nil {
-		a.session.Out.Fatal("[%s] Unable to create temporary user directory for Chrome/Chromium browser: %s\n", a.ID(), err.Error())
+		a.session.Out.Error(err.Error())
 	}
-	a.session.Out.Debug("[%s] Created temporary user directory at: %s\n", a.ID(), dir)
-	a.tempUserDirPath = dir
+	defer image1File.Close()
+	image2File, err := os.Open(image2Path)
+	if err != nil {
+		a.session.Out.Error(err.Error())
+	}
+	defer image2File.Close()
+	img1, _ := png.Decode(image1File)
+	img2, _ := png.Decode(image2File)
+	hash1, _ := goimagehash.DifferenceHash(img1)
+	hash2, _ := goimagehash.DifferenceHash(img2)
+	distance, _ := hash1.Distance(hash2)
+	return distance
 }
 
 func (a *URLScreenshotter) compareScreenshots(page *core.Page) {
