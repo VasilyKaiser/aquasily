@@ -242,7 +242,7 @@ func (s *Session) InitDirectories() {
 	*s.Options.OutDir = path.Join(*s.Options.OutDir, getFolderName())
 	if !checkIfPathExists(*s.Options.OutDir) {
 		for i := 1; i < 10000; i++ {
-			newFolderName := *s.Options.OutDir + "(" + fmt.Sprint(i) + ")"
+			newFolderName := *s.Options.OutDir + "__" + fmt.Sprint(i)
 			if checkIfPathExists(newFolderName) {
 				*s.Options.OutDir = newFolderName
 				break
